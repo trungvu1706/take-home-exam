@@ -1,14 +1,12 @@
-import { HomePage, NotFound, SecondPage } from '~/pages'
+import { HomePage, NotFound } from '~/pages'
+import { PATH_HOME_PAGE } from './routes'
 
 export const publicRoutes = [
   {
-    path: '/',
+    path: PATH_HOME_PAGE,
     component: HomePage
   },
-  {
-    path: '/second-page',
-    component: SecondPage
-  },
+
   {
     path: '*',
     component: NotFound

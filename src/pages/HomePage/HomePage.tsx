@@ -1,8 +1,47 @@
+import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth'
+import { useContext } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { logo } from '~/assets/images'
 import { Information, SharedButton } from '~/components'
 import { INFO_LIST } from '~/constants'
+import { AuthContext } from '~/context/AuthContext'
+import { PATH_SECOND_PAGE } from '~/routers'
+import { auth } from '~/service/firebase'
 
 export default function HomePage() {
+  const authContext = useContext(AuthContext)
+  const navigate = useNavigate()
+  const googleProvider = new GoogleAuthProvider()
+  const signInWithGoogle = async () => {
+    try {
+      const res = await signInWithPopup(auth, googleProvider)
+      const credential = GoogleAuthProvider.credentialFromResult(res)
+      const token = credential ? credential.accessToken : ''
+      console.log(res)
+
+      authContext.setUser({
+        displayName: res.user.displayName || '',
+        email: res.user.email || '',
+        accessToken: token || ''
+      })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  console.log(authContext.user)
+
+  const handleNavigate = () => {
+    if (!authContext.user?.accessToken) {
+      return
+    } else navigate(PATH_SECOND_PAGE)
+  }
+
+  const handleLogOut = () => {
+    signOut(auth)
+    authContext.setUser({ accessToken: '' })
+  }
+
   return (
     <>
       <div className='mb-16 flex w-full justify-between px-9 py-16'>
@@ -17,8 +56,15 @@ export default function HomePage() {
               </SharedButton>
             </div>
             <div className='flex items-center justify-between'>
-              <SharedButton className='h-10 w-[170px] bg-blue-200 text-white-900'>Log in</SharedButton>
-              <SharedButton className='h-10 w-[250px] bg-white-900'>Launch App</SharedButton>
+              <SharedButton
+                className='h-10 w-[170px] bg-blue-200 text-white-900'
+                onClick={authContext.user?.accessToken ? handleLogOut : signInWithGoogle}
+              >
+                {authContext.user?.accessToken ? 'Log out' : ' Log in'}
+              </SharedButton>
+              <SharedButton className='h-10 w-[250px] bg-white-900' onClick={handleNavigate}>
+                Launch App
+              </SharedButton>
             </div>
           </div>
         </div>
